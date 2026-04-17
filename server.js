@@ -30,6 +30,36 @@ app.get('/api/status', (req, res) => {
 
 // --- CRUD Operations ---
 
+// --- AUTH Operations ---
+app.post('/api/auth/signup', async (req, res) => {
+    const { email, password, username } = req.body;
+    try {
+        // Send to Supabase Auth. Pass the username natively as meta-data.
+        const { data, error } = await supabase.auth.signUp({
+            email,
+            password,
+            options: { data: { username: username } }
+        });
+        if (error) throw error;
+
+        res.json({ status: 'success', user: data.user, session: data.session });
+    } catch (err) {
+        console.error("Signup Error:", err.message);
+        res.status(400).json({ status: 'error', message: err.message });
+    }
+});
+
+app.post('/api/auth/login', async (req, res) => {
+    const { email, password } = req.body;
+    try {
+        const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+        if (error) throw error;
+        res.json({ status: 'success', user: data.user, session: data.session });
+    } catch (err) {
+        res.status(400).json({ status: 'error', message: err.message });
+    }
+});
+
 // 1. READ: Fetch all problems
 app.get('/api/problems', async (req, res) => {
     try {

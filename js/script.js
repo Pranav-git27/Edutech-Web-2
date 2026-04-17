@@ -586,9 +586,25 @@ function initLoginForm() {
     e.preventDefault();
     const email = document.getElementById('email').value;
     const password = document.getElementById('password').value;
-    // TODO: POST /api/auth/login { email, password }
-    console.log('Login attempt:', { email });
-    showFormMessage('login-msg', 'Backend not connected. Implement POST /api/auth/login', 'info');
+
+    showFormMessage('login-msg', 'Authenticating...', 'info');
+
+    fetch(`${API_URL || 'http://localhost:3000/api'}/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password })
+    })
+      .then(r => r.json())
+      .then(data => {
+        if (data.status === 'success') {
+          showFormMessage('login-msg', 'Login successful! Redirecting...', 'success');
+          localStorage.setItem('sb-session', JSON.stringify(data.session));
+          setTimeout(() => window.location.href = 'problems.html', 1000);
+        } else {
+          showFormMessage('login-msg', data.message, 'error');
+        }
+      })
+      .catch(err => showFormMessage('login-msg', 'Server connection failed.', 'error'));
   });
 }
 
@@ -601,13 +617,30 @@ function initSignupForm() {
     const email = document.getElementById('email').value;
     const password = document.getElementById('password').value;
     const confirm = document.getElementById('confirm-password').value;
+
     if (password !== confirm) {
       showFormMessage('signup-msg', 'Passwords do not match.', 'error');
       return;
     }
-    // TODO: POST /api/auth/signup { username, email, password }
-    console.log('Signup attempt:', { username, email });
-    showFormMessage('signup-msg', 'Backend not connected. Implement POST /api/auth/signup', 'info');
+
+    showFormMessage('signup-msg', 'Creating your account...', 'info');
+
+    fetch(`${API_URL || 'http://localhost:3000/api'}/auth/signup`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password, username })
+    })
+      .then(r => r.json())
+      .then(data => {
+        if (data.status === 'success') {
+          showFormMessage('signup-msg', 'Account created! Redirecting...', 'success');
+          localStorage.setItem('sb-session', JSON.stringify(data.session));
+          setTimeout(() => window.location.href = 'problems.html', 1500);
+        } else {
+          showFormMessage('signup-msg', data.message, 'error');
+        }
+      })
+      .catch(err => showFormMessage('signup-msg', 'Server connection failed.', 'error'));
   });
 }
 

@@ -41,7 +41,9 @@ This is a **full-stack coding platform** designed for:
   - [x] Initialize server, setup routing.
   - [ ] Implement CRUD operations for all entities.
 - [ ] **Step 3: Authentication & Security**
-  - [ ] Implement Supabase JWT Auth in frontend and backend.
+  - [x] Implemented Express POST routes for Login/Signup.
+  - [x] Created trigger to sync Supabase Auth implicitly with Postgres Profiles table (Data Consistency).
+  - [x] Connected frontend forms to trigger Real Auth API.
 - [ ] **Step 4: Frontend API Integration**
   - [ ] Connect existing HTML/JS UI to the new APIs.
 - [ ] **Step 5: Code Execution Service**

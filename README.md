@@ -33,6 +33,21 @@ This is a **full-stack coding platform** designed for:
 | Hybrid  | Partial API integration     |
 | Dynamic | Fully backend-driven system |
 
+### 📈 Phase 2 Progress Tracker (Dynamic Evaluation)
+- [x] **Step 1: Database Architecture & Schema Design**
+  - [x] Define PostgreSQL Schema for Users, Problems, Submissions, Contests.
+  - [x] Initialize Supabase project & update env vars.
+- [ ] **Step 2: Backend API Layer (Node.js/Express)**
+  - [ ] Initialize server, setup routing.
+  - [ ] Implement CRUD operations for all entities.
+- [ ] **Step 3: Authentication & Security**
+  - [ ] Implement Supabase JWT Auth in frontend and backend.
+- [ ] **Step 4: Frontend API Integration**
+  - [ ] Connect existing HTML/JS UI to the new APIs.
+- [ ] **Step 5: Code Execution Service**
+  - [ ] Add execution logic payload validation.
+  - [ ] Calculate logic for Leaderboards based on submissions.
+
 ---
 
 ## 🧩 Functional Modules
@@ -299,16 +314,17 @@ User → Write Code → `POST /api/run-code` → Execution → Result
 
 * HTML5
 * CSS3
-* JavaScript
+* Vanilla JavaScript (ES6)
 
 ### Backend
 
 * Node.js
-* Express.js
+* Express.js REST API
 
-### Database
+### Database & Auth
 
-* MongoDB / Firebase
+* Supabase (PostgreSQL)
+* Supabase Authentication (JWT)
 
 ---
 

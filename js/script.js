@@ -470,19 +470,23 @@ function initAIHint() {
   const newHintBtn = document.getElementById('new-hint-btn');
   if (!btn || !panel) return;
 
+  const fetchHint = () => {
+    hintText.textContent = "AI is analyzing your code snippet...";
+    fetch(`${API_URL || 'http://localhost:3000/api'}/ai/hint`, { method: 'POST' })
+      .then(r => r.json())
+      .then(res => {
+        if (res.status === 'success') hintText.textContent = res.data;
+        else hintText.textContent = "AI Engine offline.";
+      }).catch(() => hintText.textContent = "Network Error.");
+  };
+
   btn.addEventListener('click', () => {
     panel.classList.toggle('open');
-    if (panel.classList.contains('open')) {
-      // TODO: POST /api/ai/hint
-      hintText.textContent = AI_HINTS[Math.floor(Math.random() * AI_HINTS.length)];
-    }
+    if (panel.classList.contains('open')) fetchHint();
   });
 
   if (newHintBtn) {
-    newHintBtn.addEventListener('click', () => {
-      // TODO: POST /api/ai/hint with current code context
-      hintText.textContent = AI_HINTS[Math.floor(Math.random() * AI_HINTS.length)];
-    });
+    newHintBtn.addEventListener('click', fetchHint);
   }
 
   document.addEventListener('click', (e) => {
@@ -494,48 +498,64 @@ function initAIHint() {
 function initLeaderboard() {
   const tbody = document.getElementById('leaderboard-tbody');
   if (!tbody) return;
-  // TODO: GET /api/leaderboard
-  tbody.innerHTML = DUMMY_USERS.map(u => {
-    const rankClass = u.rank === 1 ? 'rank-gold' : u.rank === 2 ? 'rank-silver' : u.rank === 3 ? 'rank-bronze' : 'rank-num';
-    const barWidth = Math.round((u.rating / 3000) * 80);
-    return `
-      <tr>
-        <td><span class="${rankClass}">${u.rank}</span></td>
-        <td>
-          <div class="user-cell">
-            <div class="avatar" style="background:${u.color}18;color:${u.color}">${u.avatar}</div>
-            <div>
-              <div style="font-weight:600;font-size:0.875rem;letter-spacing:-0.01em">${u.username}</div>
-              <div style="font-size:0.75rem;color:var(--text-muted)">${u.name}</div>
-            </div>
-          </div>
-        </td>
-        <td style="font-weight:600;font-variant-numeric:tabular-nums">${u.solved}</td>
-        <td style="color:var(--accent);font-weight:600;font-variant-numeric:tabular-nums">${u.points.toLocaleString()}</td>
-        <td>
-          <div class="rating-display">
-            <div class="rating-bar-track"><div class="rating-bar-fill" style="width:${barWidth}px"></div></div>
-            <span style="font-weight:700;color:var(--purple);font-variant-numeric:tabular-nums">${u.rating}</span>
-          </div>
-        </td>
-      </tr>`;
-  }).join('');
+
+  fetch(`${API_URL || 'http://localhost:3000/api'}/leaderboard`)
+    .then(r => r.json())
+    .then(res => {
+      if (res.status === 'success' && res.data.length > 0) {
+        tbody.innerHTML = res.data.map((u, i) => {
+          const rankClass = i === 0 ? 'rank-gold' : i === 1 ? 'rank-silver' : i === 2 ? 'rank-bronze' : 'rank-num';
+          return `
+                  <tr>
+                    <td><span class="${rankClass}">${i + 1}</span></td>
+                    <td>
+                      <div class="user-cell">
+                        <div class="avatar" style="background:#58a6ff18;color:#58a6ff">${u.username.substring(0, 2).toUpperCase()}</div>
+                        <div>
+                          <div style="font-weight:600;font-size:0.875rem;letter-spacing:-0.01em">${u.username}</div>
+                        </div>
+                      </div>
+                    </td>
+                    <td style="font-weight:600;font-variant-numeric:tabular-nums">${u.problems_solved || 0}</td>
+                    <td style="color:var(--accent);font-weight:600;font-variant-numeric:tabular-nums">${u.total_score || 0}</td>
+                    <td>
+                      <div class="rating-display">
+                        <div class="rating-bar-track"><div class="rating-bar-fill" style="width:100%"></div></div>
+                        <span style="font-weight:700;color:var(--purple);font-variant-numeric:tabular-nums">${(u.total_score || 0) * 8}</span>
+                      </div>
+                    </td>
+                  </tr>`;
+        }).join('');
+      } else {
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center">No data found. Submit code to rank!</td></tr>';
+      }
+    })
+    .catch(err => tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:var(--red)">Leaderboard synchronization failed.</td></tr>');
 }
 
 // ===== SUBMISSIONS PAGE =====
 function initSubmissionsPage() {
   const tbody = document.getElementById('submissions-tbody');
   if (!tbody) return;
-  // TODO: GET /api/submissions
-  tbody.innerHTML = DUMMY_SUBMISSIONS.map(s => `
-    <tr>
-      <td><a href="problem.html?id=${s.problemId}" style="color:var(--accent)">${s.problem}</a></td>
-      <td>${getSubmissionBadge(s.status)}</td>
-      <td><span class="tag">${s.language}</span></td>
-      <td style="color:var(--text-secondary)">${s.runtime}</td>
-      <td style="color:var(--text-secondary)">${s.memory}</td>
-      <td style="color:var(--text-muted);font-size:0.8rem">${s.time}</td>
-    </tr>`).join('');
+
+  fetch(`${API_URL || 'http://localhost:3000/api'}/submissions`)
+    .then(r => r.json())
+    .then(res => {
+      if (res.status === 'success' && res.data.length > 0) {
+        tbody.innerHTML = res.data.map(s => `
+                <tr>
+                  <td><a href="problem.html?id=${s.problem_id}" style="color:var(--accent)">${s.problems?.title || 'Unknown Issue'}</a></td>
+                  <td>${getSubmissionBadge(s.verdict)}</td>
+                  <td><span class="tag">${s.language}</span></td>
+                  <td style="color:var(--text-secondary)">${s.execution_time || 0} ms</td>
+                  <td style="color:var(--text-secondary)">${s.memory_used || 0} MB</td>
+                  <td style="color:var(--text-muted);font-size:0.8rem">${formatDate(s.created_at)}</td>
+                </tr>`).join('');
+      } else {
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center">No active submissions exist. Write some code!</td></tr>';
+      }
+    })
+    .catch(() => tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:var(--red)">Failed to fetch submissions.</td></tr>');
 }
 
 // ===== CONTESTS PAGE =====

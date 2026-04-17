@@ -126,6 +126,60 @@ app.post('/api/submit-code', async (req, res) => {
     }
 });
 
+// 3. READ: Fetch Global Leaderboard Data
+app.get('/api/leaderboard', async (req, res) => {
+    try {
+        // Fetch top 50 users based on Score!
+        const { data, error } = await supabase
+            .from('profiles')
+            .select('username, total_score, problems_solved')
+            .order('total_score', { ascending: false })
+            .limit(50);
+        if (error) throw error;
+        res.json({ status: 'success', data });
+    } catch (err) {
+        res.status(500).json({ status: 'error', message: err.message });
+    }
+});
+
+// 4. READ: Fetch Submissions Feed
+app.get('/api/submissions', async (req, res) => {
+    try {
+        // Grab recent submissions and JOIN with the problems table to get the Title
+        const { data, error } = await supabase
+            .from('submissions')
+            .select('*, problems(title)')
+            .order('created_at', { ascending: false })
+            .limit(20);
+        if (error) throw error;
+        res.json({ status: 'success', data });
+    } catch (err) {
+        res.status(500).json({ status: 'error', message: err.message });
+    }
+});
+
+// 5. POST: AI Hint Generator Module 
+app.post('/api/ai/hint', async (req, res) => {
+    try {
+        const AI_HINTS = [
+            "Think about what data structure allows O(1) lookups. A hash map might be your best friend here.",
+            "Consider the sliding window technique — it can reduce O(n²) to O(n) for substring problems.",
+            "Dynamic programming often helps when you see overlapping subproblems. Try defining dp[i] as the answer for the first i elements.",
+            "Binary search works on any monotonic function, not just sorted arrays.",
+            "For tree problems, think recursively: what does the function return for a leaf node?"
+        ];
+
+        // Mocking an AI delay to show "Thinking..." before sending response
+        const hint = AI_HINTS[Math.floor(Math.random() * AI_HINTS.length)];
+        setTimeout(() => {
+            res.json({ status: 'success', data: hint });
+        }, 1200);
+
+    } catch (err) {
+        res.status(500).json({ status: 'error', message: err.message });
+    }
+});
+
 app.listen(port, () => {
     console.log(`Server is running at http://localhost:${port}`);
 });

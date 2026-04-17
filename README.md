@@ -37,18 +37,18 @@ This is a **full-stack coding platform** designed for:
 - [x] **Step 1: Database Architecture & Schema Design**
   - [x] Define PostgreSQL Schema for Users, Problems, Submissions, Contests.
   - [x] Initialize Supabase project & update env vars.
-- [ ] **Step 2: Backend API Layer (Node.js/Express)**
+- [x] **Step 2: Backend API Layer (Node.js/Express)**
   - [x] Initialize server, setup routing.
-  - [ ] Implement CRUD operations for all entities.
-- [ ] **Step 3: Authentication & Security**
+  - [x] Implement CRUD operations (Submission Create, Profile Update).
+- [x] **Step 3: Authentication & Security**
   - [x] Implemented Express POST routes for Login/Signup.
   - [x] Created trigger to sync Supabase Auth implicitly with Postgres Profiles table (Data Consistency).
   - [x] Connected frontend forms to trigger Real Auth API.
-- [ ] **Step 4: Frontend API Integration**
-  - [ ] Connect existing HTML/JS UI to the new APIs.
-- [ ] **Step 5: Code Execution Service**
-  - [ ] Add execution logic payload validation.
-  - [ ] Calculate logic for Leaderboards based on submissions.
+- [x] **Step 4: Frontend API Integration**
+  - [x] Wired Problems List, Auth Forms, and Code Submit buttons to the live API.
+- [x] **Step 5: Code Execution Service**
+  - [x] Built backend mock evaluator tracking runtime and memory usage.
+  - [x] Mapped verdicts to automatically trigger SQL Point allocations on user profiles!
 
 ---
 

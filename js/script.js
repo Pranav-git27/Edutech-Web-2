@@ -401,29 +401,63 @@ function initCodeActions() {
   const submitBtn = document.getElementById('submit-btn');
   const output = document.getElementById('console-output');
 
+  // Helper auth check function
+  const getAuthHeader = () => {
+    const sessionStr = localStorage.getItem('sb-session');
+    if (!sessionStr) return null;
+    try { return JSON.parse(sessionStr).access_token; } catch { return null; }
+  };
+
   if (runBtn) {
     runBtn.addEventListener('click', () => {
-      // TODO: POST /api/run-code
-      output.innerHTML = '<span class="out-info">Running test cases...</span>';
+      output.innerHTML = '<span class="out-info">Running mock test cases... </span>';
       setTimeout(() => {
         output.innerHTML = `
           <span class="out-success">✓ Test case 1 passed</span><br>
-          <span class="out-success">✓ Test case 2 passed</span><br>
-          <span class="out-info">Runtime: 52ms · Memory: 14.2 MB</span>`;
-      }, 800);
+          <span class="out-info">Mock local engine executed. Click Submit to save to DB!</span>`;
+      }, 600);
     });
   }
 
   if (submitBtn) {
     submitBtn.addEventListener('click', () => {
-      // TODO: POST /api/submit-code
-      output.innerHTML = '<span class="out-info">Submitting solution...</span>';
-      setTimeout(() => {
-        output.innerHTML = `
-          <span class="out-success">Accepted</span><br>
-          <span class="out-info">Runtime: 52ms (beats 87.3%) · Memory: 14.2 MB (beats 72.1%)</span><br>
-          <span class="out-info">All 57 test cases passed.</span>`;
-      }, 1200);
+      const token = getAuthHeader();
+      if (!token) {
+        output.innerHTML = '<span class="out-error" style="color:var(--red); font-weight:bold;">Security Warning:<br>Please Log In or Sign Up first to submit code!</span>';
+        return;
+      }
+
+      const params = new URLSearchParams(window.location.search);
+      const problemId = parseInt(params.get('id')) || 1;
+      const language = document.getElementById('lang-select').value;
+      const code = document.getElementById('code-editor').value;
+
+      output.innerHTML = '<span class="out-info">Securely evaluating via Express API inside Node.js...</span>';
+
+      fetch(`${API_URL || 'http://localhost:3000/api'}/submit-code`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ problemId, language, code })
+      })
+        .then(r => r.json())
+        .then(res => {
+          if (res.status === 'success') {
+            const o = res.data;
+            const color = o.verdict === 'Accepted' ? 'var(--green)' : 'var(--red)';
+            output.innerHTML = `
+                <span style="color:${color}; font-weight: bold; font-size: 1.2rem">${o.verdict}</span><br>
+                <span class="out-info">Runtime: ${o.execution_time}ms · Memory: ${o.memory_used} MB</span><br>
+                <span class="out-info" style="color:#d29e3a;">Result seamlessly stored inside Supabase [Submissions] Table! Points Updated.</span>`;
+          } else {
+            output.innerHTML = `<span class="out-error" style="color:var(--red)">Authentication/Eval Error: ${res.message}</span>`;
+          }
+        })
+        .catch(err => {
+          output.innerHTML = `<span class="out-error" style="color:var(--red)">Server network failure.</span>`;
+        });
     });
   }
 }

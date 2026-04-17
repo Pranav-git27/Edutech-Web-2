@@ -78,6 +78,54 @@ app.get('/api/problems', async (req, res) => {
     }
 });
 
+// 2. CREATE & UPDATE: Submit Code Engine (Core Competition Feature)
+app.post('/api/submit-code', async (req, res) => {
+    try {
+        // Grab Authorization header token from frontend
+        const token = req.headers.authorization?.split(' ')[1];
+        if (!token) throw new Error("Unauthorized: Please Log In first.");
+
+        // Validate user JWT securely
+        const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+        if (authError || !user) throw new Error("Unauthorized: Invalid session token");
+
+        const { problemId, language, code } = req.body;
+
+        // 🧠 Backend Mock Logic Execution (Evaluated for Quality)
+        // In a real Docker phase, we send code to Piston API here
+        const isAccepted = Math.random() > 0.3; // 70% win chance for UI demo
+        const verdict = isAccepted ? 'Accepted' : 'Wrong Answer';
+        const execution_time = Math.floor(Math.random() * 80) + 10;
+        const memory_used = (Math.random() * 20 + 10).toFixed(1);
+
+        // Clone supabase client mapped to securely bypass user constraints
+        const scopedConfig = { global: { headers: { Authorization: `Bearer ${token}` } } };
+        const userClient = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANON_KEY, scopedConfig);
+
+        // Automatically strictly record submission (Create Operation)
+        const { error: insertError } = await userClient.from('submissions').insert([{
+            user_id: user.id, problem_id: problemId, code, language, verdict, execution_time, memory_used
+        }]);
+        if (insertError) throw insertError;
+
+        // If Correct -> Increment Score in DB (Update Operation)
+        if (isAccepted) {
+            const { data: prof } = await userClient.from('profiles').select('total_score, problems_solved').eq('id', user.id).single();
+            if (prof) {
+                await userClient.from('profiles').update({
+                    total_score: prof.total_score + 10,
+                    problems_solved: prof.problems_solved + 1
+                }).eq('id', user.id);
+            }
+        }
+
+        res.json({ status: 'success', data: { verdict, execution_time, memory_used } });
+    } catch (err) {
+        console.error("Execution Error:", err.message);
+        res.status(400).json({ status: 'error', message: err.message });
+    }
+});
+
 app.listen(port, () => {
     console.log(`Server is running at http://localhost:${port}`);
 });

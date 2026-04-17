@@ -38,7 +38,7 @@ This is a **full-stack coding platform** designed for:
   - [x] Define PostgreSQL Schema for Users, Problems, Submissions, Contests.
   - [x] Initialize Supabase project & update env vars.
 - [ ] **Step 2: Backend API Layer (Node.js/Express)**
-  - [ ] Initialize server, setup routing.
+  - [x] Initialize server, setup routing.
   - [ ] Implement CRUD operations for all entities.
 - [ ] **Step 3: Authentication & Security**
   - [ ] Implement Supabase JWT Auth in frontend and backend.

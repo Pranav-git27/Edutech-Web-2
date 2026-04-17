@@ -130,7 +130,7 @@ function getDifficultyClass(diff) {
 }
 
 function getStatusIcon(status) {
-  if (status === 'solved')    return '<span class="status-check" title="Solved">✓</span>';
+  if (status === 'solved') return '<span class="status-check" title="Solved">✓</span>';
   if (status === 'attempted') return '<span class="status-partial" title="Attempted">◐</span>';
   return '<span class="status-dash" title="Not Attempted">·</span>';
 }
@@ -233,13 +233,24 @@ function renderFooter(container) {
 }
 
 // ===== PROBLEMS PAGE =====
+const API_URL = 'http://localhost:3000/api';
+
 function initProblemsPage() {
-  fetch('data/problems.json')
+  console.log("Fetching live data from Backend API...");
+  fetch(`${API_URL}/problems`)
     .then(r => r.json())
-    .then(problems => renderProblemsTable(problems))
-    .catch(() => {
-      // Fallback: use inline data if fetch fails (file:// protocol)
-      renderProblemsTable(window.PROBLEMS_DATA || []);
+    .then(response => {
+      if (response.status === 'success') {
+        renderProblemsTable(response.data);
+      } else {
+        console.error("Backend Error:", response.message);
+        renderProblemsTable([]);
+      }
+    })
+    .catch((err) => {
+      console.error("Fetch failed! Is the 'node server.js' backend running?", err);
+      // Fallback to static JSON file if server is offline
+      fetch('data/problems.json').then(r => r.json()).then(renderProblemsTable).catch(() => renderProblemsTable([]));
     });
 }
 
@@ -299,11 +310,11 @@ function renderProblemsTable(problems) {
     const el = document.getElementById('pagination');
     if (!el) return;
     let html = '';
-    if (page > 1) html += `<button class="page-btn" onclick="changePage(${page-1})">‹</button>`;
-    for (let i = Math.max(1, page-2); i <= Math.min(pages, page+2); i++) {
-      html += `<button class="page-btn ${i===page?'active':''}" onclick="changePage(${i})">${i}</button>`;
+    if (page > 1) html += `<button class="page-btn" onclick="changePage(${page - 1})">‹</button>`;
+    for (let i = Math.max(1, page - 2); i <= Math.min(pages, page + 2); i++) {
+      html += `<button class="page-btn ${i === page ? 'active' : ''}" onclick="changePage(${i})">${i}</button>`;
     }
-    if (page < pages) html += `<button class="page-btn" onclick="changePage(${page+1})">›</button>`;
+    if (page < pages) html += `<button class="page-btn" onclick="changePage(${page + 1})">›</button>`;
     el.innerHTML = html;
   }
 
@@ -341,7 +352,7 @@ function renderProblemDetail(p) {
   // Examples
   document.getElementById('problem-examples').innerHTML = p.examples.map((ex, i) => `
     <div class="example-block">
-      <div class="label">Example ${i+1}</div>
+      <div class="label">Example ${i + 1}</div>
       <code><strong>Input:</strong> ${ex.input}</code><br>
       <code><strong>Output:</strong> ${ex.output}</code>
       ${ex.explanation ? `<br><code><strong>Explanation:</strong> ${ex.explanation}</code>` : ''}
@@ -517,8 +528,8 @@ function initContestsPage() {
         ${c.status === 'upcoming' ? `<div class="countdown-text" id="cd-${c.id}">Starts in ${getCountdown(c.start)}</div>` : ''}
         <div style="margin-top:1rem;display:flex;gap:0.6rem">
           ${c.status === 'upcoming' ? `<button class="btn btn-primary btn-sm" onclick="registerContest(${c.id})">Register</button>` : ''}
-          ${c.status === 'ongoing'  ? `<button class="btn btn-success btn-sm" onclick="enterContest(${c.id})">Enter Contest</button>` : ''}
-          ${c.status === 'past'     ? `<button class="btn btn-ghost btn-sm">View Results</button>` : ''}
+          ${c.status === 'ongoing' ? `<button class="btn btn-success btn-sm" onclick="enterContest(${c.id})">Enter Contest</button>` : ''}
+          ${c.status === 'past' ? `<button class="btn btn-ghost btn-sm">View Results</button>` : ''}
           <button class="btn btn-ghost btn-sm">Details</button>
         </div>
       </div>`}).join('');
@@ -555,7 +566,7 @@ function renderHeatmap() {
   for (let i = 0; i < 364; i++) {
     const r = Math.random();
     const lvl = r > 0.85 ? 'l4' : r > 0.7 ? 'l3' : r > 0.55 ? 'l2' : r > 0.4 ? 'l1' : '';
-    html += `<div class="heatmap-cell ${lvl}" title="Day ${i+1}"></div>`;
+    html += `<div class="heatmap-cell ${lvl}" title="Day ${i + 1}"></div>`;
   }
   el.innerHTML = html;
 }

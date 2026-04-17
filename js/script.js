@@ -560,49 +560,72 @@ function initSubmissionsPage() {
 
 // ===== CONTESTS PAGE =====
 function initContestsPage() {
-  // TODO: GET /api/contests
-  ['upcoming', 'ongoing', 'past'].forEach(type => {
-    const el = document.getElementById(`${type}-contests`);
-    if (!el) return;
-    const list = DUMMY_CONTESTS.filter(c => c.status === type);
-    el.innerHTML = list.map(c => {
-      const pillClass = { upcoming: 'pill-upcoming', ongoing: 'pill-ongoing', past: 'pill-past' }[c.status];
-      const pillLabel = { upcoming: 'Upcoming', ongoing: 'Live', past: 'Ended' }[c.status];
-      const liveDot = c.status === 'ongoing' ? '<span class="live-dot"></span>' : '';
-      return `
-      <div class="contest-card">
-        <div class="contest-status-pill ${pillClass}">${liveDot}${pillLabel}</div>
-        <div class="contest-name">${c.name}</div>
-        <div class="contest-meta">
-          <span class="contest-meta-item"><span class="contest-meta-icon">Cal</span>${formatDate(c.start)}</span>
-          <span class="contest-meta-item">${c.duration}</span>
-          <span class="contest-meta-item">${c.problems} problems</span>
-          ${c.participants > 0 ? `<span class="contest-meta-item">${c.participants.toLocaleString()} registered</span>` : ''}
-        </div>
-        ${c.status === 'upcoming' ? `<div class="countdown-text" id="cd-${c.id}">Starts in ${getCountdown(c.start)}</div>` : ''}
-        <div style="margin-top:1rem;display:flex;gap:0.6rem">
-          ${c.status === 'upcoming' ? `<button class="btn btn-primary btn-sm" onclick="registerContest(${c.id})">Register</button>` : ''}
-          ${c.status === 'ongoing' ? `<button class="btn btn-success btn-sm" onclick="enterContest(${c.id})">Enter Contest</button>` : ''}
-          ${c.status === 'past' ? `<button class="btn btn-ghost btn-sm">View Results</button>` : ''}
-          <button class="btn btn-ghost btn-sm">Details</button>
-        </div>
-      </div>`}).join('');
-  });
-
-  setInterval(() => {
-    DUMMY_CONTESTS.filter(c => c.status === 'upcoming').forEach(c => {
-      const el = document.getElementById(`cd-${c.id}`);
-      if (el) el.textContent = `Starts in ${getCountdown(c.start)}`;
-    });
-  }, 60000);
+  fetch(`${API_URL || 'http://localhost:3000/api'}/contests`)
+    .then(r => r.json())
+    .then(res => {
+      if (res.status === 'success' && res.data) {
+        ['Upcoming', 'Active', 'Past'].forEach(type => {
+          const el = document.getElementById(`${type.toLowerCase()}-contests`);
+          if (!el) return;
+          const list = res.data.filter(c => c.status === type);
+          el.innerHTML = list.map(c => {
+            const pillClass = { Upcoming: 'pill-upcoming', Active: 'pill-ongoing', Past: 'pill-past' }[c.status];
+            const pillLabel = { Upcoming: 'Upcoming', Active: 'Live', Past: 'Ended' }[c.status];
+            const liveDot = c.status === 'Active' ? '<span class="live-dot"></span>' : '';
+            return `
+                  <div class="contest-card">
+                    <div class="contest-status-pill ${pillClass}">${liveDot}${pillLabel}</div>
+                    <div class="contest-name">${c.title}</div>
+                    <div class="contest-meta">
+                      <span class="contest-meta-item"><span class="contest-meta-icon">★</span>${formatDate(c.start_time)}</span>
+                      <span class="contest-meta-item">Ranked</span>
+                    </div>
+                    ${c.status === 'Upcoming' ? `<div class="countdown-text" id="cd-${c.id}">Starts very soon!</div>` : ''}
+                    <div style="margin-top:1rem;display:flex;gap:0.6rem">
+                      ${c.status === 'Upcoming' ? `<button class="btn btn-primary btn-sm" onclick="registerContest(${c.id})">Register</button>` : ''}
+                      ${c.status === 'Active' ? `<button class="btn btn-success btn-sm" onclick="enterContest(${c.id})">Enter Contest</button>` : ''}
+                      ${c.status === 'Past' ? `<button class="btn btn-ghost btn-sm">View Results</button>` : ''}
+                      <button class="btn btn-ghost btn-sm" onclick="viewContestDetails(${c.id})">Details</button>
+                    </div>
+                  </div>`}).join('');
+        });
+      }
+    }).catch(console.error);
 }
 
-window.registerContest = (id) => {
-  // TODO: POST /api/contests/:id/register
-  alert(`Registered for contest #${id}! (Connect to backend to persist)`);
+window.viewContestDetails = (id) => {
+  fetch(`${API_URL || 'http://localhost:3000/api'}/contests`)
+    .then(r => r.json())
+    .then(res => {
+      if (res.status === 'success') {
+        const c = res.data.find(x => x.id === id);
+        if (c) {
+          alert(`🏆 CONTEST INFO: ${c.title}\n\nStatus: ${c.status}\nDuration: 1.5 Hours\n\n📌 ABOUT THIS EVENT:\n${c.description || 'No description assigned yet.'}`);
+        }
+      }
+    });
 };
+
+window.registerContest = (id) => {
+  const sessionStr = localStorage.getItem('sb-session');
+  if (!sessionStr) return alert("Security Warning: You must log in first to save your Registration to the Database!");
+
+  fetch(`${API_URL || 'http://localhost:3000/api'}/contests/register`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${JSON.parse(sessionStr).access_token}`
+    },
+    body: JSON.stringify({ contestId: id })
+  }).then(r => r.json()).then(data => {
+    if (data.status === 'success') alert(`Success! You have officially registered for Contest #${id}. Check the Database!`);
+    else alert(`Registration Error: ${data.message}`);
+  });
+};
+
 window.enterContest = (id) => {
-  alert(`Entering contest #${id}! (Backend needed for contest problems)`);
+  alert(`Redirecting you to Live Contest #${id}...`);
+  window.location.href = 'problems.html'; // Route competitors to problems arena
 };
 
 // ===== DASHBOARD =====

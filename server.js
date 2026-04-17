@@ -180,6 +180,49 @@ app.post('/api/ai/hint', async (req, res) => {
     }
 });
 
+// 6. READ: Fetch Live Contests Dashboard
+app.get('/api/contests', async (req, res) => {
+    try {
+        const { data, error } = await supabase.from('contests').select('*').order('id', { ascending: true });
+        if (error) throw error;
+        res.json({ status: 'success', data });
+    } catch (err) {
+        res.status(500).json({ status: 'error', message: err.message });
+    }
+});
+
+// 7. CREATE: Formal Contest Registration Engine
+app.post('/api/contests/register', async (req, res) => {
+    try {
+        // Secure the Token
+        const token = req.headers.authorization?.split(' ')[1];
+        if (!token) throw new Error("Unauthorized: Please log in first.");
+
+        const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+        if (authError || !user) throw new Error("Unauthorized: Invalid Session");
+
+        const { contestId } = req.body;
+
+        // Scope constraints for Data Consistency
+        const scopedConfig = { global: { headers: { Authorization: `Bearer ${token}` } } };
+        const userClient = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANON_KEY, scopedConfig);
+
+        // Perform Database Registration (Handles Duplicates naturally)
+        const { error } = await userClient.from('contest_registrations').insert([{
+            user_id: user.id, contest_id: contestId
+        }]);
+
+        if (error) {
+            if (error.code === '23505') throw new Error("You are already successfully registered for this Contest!");
+            throw error;
+        }
+
+        res.json({ status: 'success', message: 'Registration Locked In!' });
+    } catch (err) {
+        res.status(400).json({ status: 'error', message: err.message });
+    }
+});
+
 app.listen(port, () => {
     console.log(`Server is running at http://localhost:${port}`);
 });

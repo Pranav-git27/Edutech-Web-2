@@ -52,6 +52,10 @@ This is a **full-stack coding platform** designed for:
 - [x] **Step 6: Real-time Innovation Engine (Phase 2)**
   - [x] Implemented PostgreSQL Real-time Broadcast via Supabase Channels.
   - [x] Wired Backend events (Signup, Login, Solve) to trigger global Toast notifications.
+- [x] **Step 7: Advanced Social & Admin Features (Extra)**
+  - [x] **Global Discussions:** Real-time threads on every problem.
+  - [x] **Admin Analytics Board:** Live platform-wide counters (Users, Subs, Probs).
+  - [x] **Cloud Deployment:** Production-ready on Vercel with automated routing.
 
 ---
 
@@ -410,10 +414,24 @@ Open for educational and development purposes.
 
 ---
 
-## 🚀 Technical Innovation: Real-time Social Proof
-To set this project apart, we implemented a **Real-time Innovation Engine** using Supabase Broadcast/Listen (PostgreSQL WebSockets).
-- **Architecture:** The backend (`server.js`) logs critical app events (Signups, Logins, Submissions) into a dedicated `site_activity` table.
-- **Real-time Sync:** The frontend (`script.js`) maintains a persistent WebSocket connection to Supabase.
-- **User UX:** Whenever a rival user solves a problem or registers for a contest, a "Live Activity" toast notification appears instantly on every connected client, creating a sense of a living, breathing competitive ecosystem.
+---
+
+## 🌟 EXTRA INNOVATIONS 
+
+### 🥇 1. Real-time Social Proof Engine
+To set this project apart, we implemented a **Real-time Innovation Engine** using Supabase Broadcast/Listen (PostgreSQL WebSockets). 
+- **User UX:** Whenever a rival solves a problem or registers, a "Live Activity" toast notification appears instantly on every client. **"New student joined from [Email]!"**
+
+### 📊 2. Admin Analytics Board
+A dedicated, glowing dashboard at the top of the User Profile that tracks global platform growth using Supabase `.count()` aggregation. 
+- **Live Counters:** Total Registered Minds, Code Submissions Analyzed, and Curated Problem Set.
+
+### 💬 3. Problem Discussion Threads
+A fully functioning community section for every problem.
+- **Features:** Post comments, view upvotes, and see real-time updates when others share insights.
+- **Security:** RLS (Row Level Security) ensures only authenticated users can contribute.
+
+### 🚀 4. Production Deployment
+The entire stack is deployed on **Vercel** with a custom `vercel.json` configuration for seamless Node.js runtime execution.
 
 💡 *Code. Compete. Improve.*

@@ -49,6 +49,9 @@ This is a **full-stack coding platform** designed for:
 - [x] **Step 5: Code Execution Service**
   - [x] Built backend mock evaluator tracking runtime and memory usage.
   - [x] Mapped verdicts to automatically trigger SQL Point allocations on user profiles!
+- [x] **Step 6: Real-time Innovation Engine (Phase 2)**
+  - [x] Implemented PostgreSQL Real-time Broadcast via Supabase Channels.
+  - [x] Wired Backend events (Signup, Login, Solve) to trigger global Toast notifications.
 
 ---
 
@@ -404,5 +407,13 @@ Feel free to fork, extend, and enhance it.
 Open for educational and development purposes.
 
 ---
+
+---
+
+## 🚀 Technical Innovation: Real-time Social Proof
+To set this project apart, we implemented a **Real-time Innovation Engine** using Supabase Broadcast/Listen (PostgreSQL WebSockets).
+- **Architecture:** The backend (`server.js`) logs critical app events (Signups, Logins, Submissions) into a dedicated `site_activity` table.
+- **Real-time Sync:** The frontend (`script.js`) maintains a persistent WebSocket connection to Supabase.
+- **User UX:** Whenever a rival user solves a problem or registers for a contest, a "Live Activity" toast notification appears instantly on every connected client, creating a sense of a living, breathing competitive ecosystem.
 
 💡 *Code. Compete. Improve.*

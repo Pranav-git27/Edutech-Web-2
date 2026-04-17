@@ -39,8 +39,17 @@
  * AI HINT
  *   POST /api/ai/hint             { problemId, code, language } -> { hint }
  *
+ * REALTIME (Innovation Phase)
+ *   Listen to 'site_activity' table for social proof notifications.
+ *
  * ============================================================
  */
+const SUPABASE_URL = "https://wadsgavbqlcaqkldlgne.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndhZHNnYXZicWxjYXFrbGRsZ25lIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYzODY4ODUsImV4cCI6MjA5MTk2Mjg4NX0.59HPo2GYB_Txwvv06PvAJPDE2K6FZcq_jaJ4GNDs07A";
+
+// Global for Real-time
+let supabaseJS = null;
+
 
 // ===== DUMMY DATA =====
 
@@ -333,6 +342,7 @@ function initProblemPage() {
     .then(problems => {
       const p = problems.find(x => x.id === id) || problems[0];
       renderProblemDetail(p);
+      initDiscussions(id);
     })
     .catch(() => renderProblemDetail(null));
 }
@@ -497,40 +507,109 @@ function initAIHint() {
 // ===== LEADERBOARD =====
 function initLeaderboard() {
   const tbody = document.getElementById('leaderboard-tbody');
+  const podium = document.getElementById('top3-podium');
+  const searchInput = document.getElementById('leaderboard-search');
+  const filterBtns = document.querySelectorAll('.filter-btn');
+  const pageBtns = document.querySelectorAll('.page-btn');
+
   if (!tbody) return;
 
-  fetch(`${API_URL || 'http://localhost:3000/api'}/leaderboard`)
-    .then(r => r.json())
-    .then(res => {
-      if (res.status === 'success' && res.data.length > 0) {
-        tbody.innerHTML = res.data.map((u, i) => {
-          const rankClass = i === 0 ? 'rank-gold' : i === 1 ? 'rank-silver' : i === 2 ? 'rank-bronze' : 'rank-num';
-          return `
-                  <tr>
-                    <td><span class="${rankClass}">${i + 1}</span></td>
-                    <td>
-                      <div class="user-cell">
-                        <div class="avatar" style="background:#58a6ff18;color:#58a6ff">${u.username.substring(0, 2).toUpperCase()}</div>
-                        <div>
-                          <div style="font-weight:600;font-size:0.875rem;letter-spacing:-0.01em">${u.username}</div>
-                        </div>
-                      </div>
-                    </td>
-                    <td style="font-weight:600;font-variant-numeric:tabular-nums">${u.problems_solved || 0}</td>
-                    <td style="color:var(--accent);font-weight:600;font-variant-numeric:tabular-nums">${u.total_score || 0}</td>
-                    <td>
-                      <div class="rating-display">
-                        <div class="rating-bar-track"><div class="rating-bar-fill" style="width:100%"></div></div>
-                        <span style="font-weight:700;color:var(--purple);font-variant-numeric:tabular-nums">${(u.total_score || 0) * 8}</span>
-                      </div>
-                    </td>
-                  </tr>`;
-        }).join('');
-      } else {
-        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center">No data found. Submit code to rank!</td></tr>';
-      }
-    })
-    .catch(err => tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:var(--red)">Leaderboard synchronization failed.</td></tr>');
+  let currentPage = 1;
+  let currentSearch = '';
+
+  const renderPodium = (top3) => {
+    if (!podium || top3.length === 0) return;
+    const getBox = (u, rank) => {
+      if (!u) return `<div style="flex:1;max-width:150px"></div>`;
+      const isGold = rank === 1;
+      const height = rank === 1 ? 100 : rank === 2 ? 72 : 52;
+      const clr = rank === 1 ? '#d4a017' : rank === 2 ? '#9ba3af' : '#a0714f';
+      const rClass = rank === 1 ? 'rank-gold' : rank === 2 ? 'rank-silver' : 'rank-bronze';
+      return `
+          <div style="text-align:center;flex:1;max-width:${isGold ? 170 : 150}px">
+            <div class="avatar" style="width:${isGold ? 64 : 52}px;height:${isGold ? 64 : 52}px;font-size:${isGold ? 1.35 : 1.1}rem;margin:0 auto 0.5rem;background:${clr}18;color:${clr}">${u.username.substring(0, 2).toUpperCase()}</div>
+            <div style="font-weight:700;font-size:${isGold ? 0.95 : 0.875}rem;letter-spacing:-0.01em">${u.username}</div>
+            <div style="color:var(--text-muted);font-size:0.75rem;margin-bottom:0.75rem">${u.total_score || 0} pts</div>
+            <div style="background:var(--bg-secondary);border:1px solid ${clr}33;border-radius:var(--radius-sm) var(--radius-sm) 0 0;height:${height}px;display:flex;align-items:center;justify-content:center">
+              <span class="${rClass}" style="font-size:${isGold ? 1.5 : 1.25}rem;font-weight:800">${rank}</span>
+            </div>
+          </div>`;
+    };
+
+    // HTML ordering puts the 2nd place array first, then 1st, then 3rd
+    podium.innerHTML = getBox(top3[1], 2) + getBox(top3[0], 1) + getBox(top3[2], 3);
+  };
+
+  const loadLeaderboard = () => {
+    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:2rem;">Fetching Live Global Data...</td></tr>';
+    fetch(`${API_URL || 'http://localhost:3000/api'}/leaderboard?page=${currentPage}&search=${currentSearch}`)
+      .then(r => r.json())
+      .then(res => {
+        if (res.status === 'success' && res.data.length > 0) {
+          // Instantly overwrite massive 3D podium if no search constraints match Page 1
+          if (currentPage === 1 && !currentSearch) renderPodium(res.data.slice(0, 3));
+
+          tbody.innerHTML = res.data.map((u, i) => {
+            const absRank = ((currentPage - 1) * 10) + i;
+            const rankClass = absRank === 0 ? 'rank-gold' : absRank === 1 ? 'rank-silver' : absRank === 2 ? 'rank-bronze' : 'rank-num';
+            return `
+                      <tr>
+                        <td><span class="${rankClass}">${absRank + 1}</span></td>
+                        <td>
+                          <div class="user-cell">
+                            <div class="avatar" style="background:#58a6ff18;color:#58a6ff">${u.username.substring(0, 2).toUpperCase()}</div>
+                            <div><div style="font-weight:600;font-size:0.875rem">${u.username}</div></div>
+                          </div>
+                        </td>
+                        <td style="font-weight:600;font-variant-numeric:tabular-nums">${u.problems_solved || 0}</td>
+                        <td style="color:var(--accent);font-weight:600;font-variant-numeric:tabular-nums">${u.total_score || 0}</td>
+                        <td>
+                          <div class="rating-display">
+                            <div class="rating-bar-track"><div class="rating-bar-fill" style="width:100%"></div></div>
+                            <span style="font-weight:700;color:var(--purple);font-variant-numeric:tabular-nums">${(u.total_score || 0) * 8}</span>
+                          </div>
+                        </td>
+                      </tr>`;
+          }).join('');
+        } else {
+          tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:2rem;">No users found in standard database matching search rules.</td></tr>';
+          if (currentPage === 1 && currentSearch && podium) podium.innerHTML = '';
+        }
+      }).catch(err => tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:var(--red)">Network Routing failed.</td></tr>');
+  };
+
+  // 1. Search Logic
+  if (searchInput) {
+    searchInput.addEventListener('input', (e) => {
+      currentSearch = e.target.value;
+      currentPage = 1;
+      loadLeaderboard();
+    });
+  }
+
+  // 2. Filter Buttons Logic
+  filterBtns.forEach(b => {
+    b.addEventListener('click', () => {
+      filterBtns.forEach(x => { x.classList.remove('btn-primary'); x.classList.add('btn-ghost'); });
+      b.classList.remove('btn-ghost'); b.classList.add('btn-primary');
+      currentPage = 1;
+      loadLeaderboard();
+    });
+  });
+
+  // 3. Pagination Logic
+  pageBtns.forEach(b => {
+    b.addEventListener('click', () => {
+      const p = b.dataset.page;
+      pageBtns.forEach(x => x.classList.remove('active'));
+      b.classList.add('active');
+      if (p === 'next') currentPage++; else currentPage = parseInt(p);
+      loadLeaderboard();
+    });
+  });
+
+  // Explicit initialization trigger
+  loadLeaderboard();
 }
 
 // ===== SUBMISSIONS PAGE =====
@@ -630,7 +709,32 @@ window.enterContest = (id) => {
 
 // ===== DASHBOARD =====
 function initDashboard() {
-  // TODO: GET /api/user/stats
+  const sessionStr = localStorage.getItem('sb-session');
+  const board = document.getElementById('admin-board');
+  const welcome = document.getElementById('dash-welcome-user');
+
+  if (sessionStr) {
+    try {
+      const { user } = JSON.parse(sessionStr);
+      if (welcome) welcome.textContent = user.user_metadata?.username || user.email.split('@')[0];
+
+      // We show the Admin board for ALL users in this demo/hackathon version as a "Platform Stats" feature
+      if (board) board.style.display = 'block';
+    } catch (e) { }
+  }
+
+  // Fetch Live Admin Stats
+  fetch(`${API_URL || 'http://localhost:3000/api'}/admin/stats`)
+    .then(r => r.json())
+    .then(res => {
+      if (res.status === 'success') {
+        const d = res.data;
+        if (document.getElementById('admin-total-users')) document.getElementById('admin-total-users').textContent = d.totalUsers.toLocaleString();
+        if (document.getElementById('admin-total-submissions')) document.getElementById('admin-total-submissions').textContent = d.totalSubmissions.toLocaleString();
+        if (document.getElementById('admin-total-problems')) document.getElementById('admin-total-problems').textContent = d.totalProblems.toLocaleString();
+      }
+    });
+
   renderHeatmap();
   renderMiniCharts();
 }
@@ -728,6 +832,177 @@ function showFormMessage(id, msg, type) {
   el.style.color = type === 'error' ? 'var(--red)' : type === 'success' ? 'var(--green)' : 'var(--accent)';
   el.style.display = 'block';
 }
+
+// ===== REAL-TIME INNOVATION ENGINE =====
+function initInnovationEngine() {
+  if (typeof supabase === 'undefined') {
+    // Dynamically load Supabase script if not present
+    const s = document.createElement('script');
+    s.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2';
+    s.onload = setupRealtime;
+    document.head.appendChild(s);
+  } else {
+    setupRealtime();
+  }
+}
+
+function setupRealtime() {
+  try {
+    const client = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    // Create Toast Container
+    if (!document.querySelector('.toast-container')) {
+      const container = document.createElement('div');
+      container.className = 'toast-container';
+      document.body.appendChild(container);
+    }
+
+    // Subscribe to site_activity
+    client
+      .channel('site_activity_realtime')
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'site_activity' }, payload => {
+        const activity = payload.new;
+        showActivityToast(activity);
+      })
+      .subscribe();
+
+    console.log("📡 Real-time Innovation Engine Active!");
+  } catch (err) {
+    console.warn("Real-time init failed:", err);
+  }
+}
+
+function showActivityToast(activity) {
+  const container = document.querySelector('.toast-container');
+  if (!container) return;
+
+  const toast = document.createElement('div');
+  toast.className = 'toast';
+
+  const iconMap = {
+    'USER_SIGNUP': '👤',
+    'USER_LOGIN': '🔑',
+    'PROBLEM_SOLVED': '✅',
+    'CONTEST_REGISTER': '🏆'
+  };
+
+  const titleMap = {
+    'USER_SIGNUP': 'New Rival Joined!',
+    'USER_LOGIN': 'Student Online',
+    'PROBLEM_SOLVED': 'Challenge Conquered!',
+    'CONTEST_REGISTER': 'Contest Signup',
+    'DISCUSSION_POST': 'New Discussion'
+  };
+
+  const msgMap = {
+    'USER_SIGNUP': `New student joined from ${activity.user_email}!`,
+    'USER_LOGIN': `${activity.user_email} logged back in to practice.`,
+    'PROBLEM_SOLVED': `Hooray! ${activity.user_email} just solved a problem.`,
+    'CONTEST_REGISTER': `Get ready! ${activity.user_email} registered for a contest.`,
+    'DISCUSSION_POST': `${activity.user_email} posted a new thought.`
+  };
+
+  const icon = iconMap[activity.event_type] || '⚡';
+  const title = titleMap[activity.event_type] || 'Live Update';
+  const msg = msgMap[activity.event_type] || 'Something exciting just happened!';
+
+  toast.innerHTML = `
+    <div class="toast-icon">${icon}</div>
+    <div class="toast-content">
+      <div class="toast-title">${title}</div>
+      <div class="toast-msg">${msg}</div>
+    </div>
+  `;
+
+  container.appendChild(toast);
+
+  // Auto remove after 5s
+  setTimeout(() => {
+    toast.classList.add('toast-out');
+    setTimeout(() => toast.remove(), 400);
+  }, 5000);
+}
+
+function initDiscussions(problemId) {
+  const list = document.getElementById('discussion-list');
+  const input = document.getElementById('discussion-input');
+  const btn = document.getElementById('post-discussion-btn');
+  const msg = document.getElementById('discussion-msg');
+
+  if (!list || !btn) return;
+
+  const fetchDiscussions = () => {
+    fetch(`${API_URL}/problems/${problemId}/discussions`)
+      .then(r => r.json())
+      .then(res => {
+        if (res.status === 'success') {
+          if (res.data.length === 0) {
+            list.innerHTML = '<p style="text-align:center;color:var(--text-muted);padding:1rem;">Be the first to start the discussion!</p>';
+            return;
+          }
+          list.innerHTML = res.data.map(d => `
+            <div class="comment">
+              <div class="comment-header">
+                <div class="avatar" style="width:28px;height:28px;font-size:0.72rem;background:var(--accent-dim);color:var(--accent)">${d.username.substring(0, 2).toUpperCase()}</div>
+                <span style="font-weight:600;font-size:0.82rem">${d.username}</span>
+                <span style="color:var(--text-muted);font-size:0.75rem">${formatDate(d.created_at)}</span>
+              </div>
+              <div class="comment-body">${d.content}</div>
+              <div class="comment-actions">
+                <button>${d.upvotes || 0} upvotes</button>
+                <button>Reply</button>
+              </div>
+            </div>`).join('');
+        }
+      });
+  };
+
+  btn.addEventListener('click', () => {
+    const sessionStr = localStorage.getItem('sb-session');
+    if (!sessionStr) {
+      alert("You must be logged in to post a comment!");
+      return;
+    }
+
+    const content = input.value.trim();
+    if (!content) return;
+
+    btn.disabled = true;
+    btn.textContent = 'Posting...';
+
+    fetch(`${API_URL}/problems/${problemId}/discussions`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${JSON.parse(sessionStr).access_token}`
+      },
+      body: JSON.stringify({ content })
+    })
+      .then(r => r.json())
+      .then(data => {
+        btn.disabled = false;
+        btn.textContent = 'Post Comment';
+        if (data.status === 'success') {
+          input.value = '';
+          fetchDiscussions();
+        } else {
+          alert(data.message);
+        }
+      })
+      .catch(() => {
+        btn.disabled = false;
+        btn.textContent = 'Post Comment';
+        alert("Network Error");
+      });
+  });
+
+  fetchDiscussions();
+}
+
+// Global initialization
+document.addEventListener('DOMContentLoaded', () => {
+  initInnovationEngine();
+});
 
 // ===== INIT =====
 document.addEventListener('DOMContentLoaded', () => {

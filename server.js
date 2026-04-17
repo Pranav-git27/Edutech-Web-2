@@ -42,6 +42,11 @@ app.post('/api/auth/signup', async (req, res) => {
         });
         if (error) throw error;
 
+        // INNOVATION: Log Real-time Activity
+        await supabase.from('site_activity').insert([
+            { event_type: 'USER_SIGNUP', user_email: email }
+        ]);
+
         res.json({ status: 'success', user: data.user, session: data.session });
     } catch (err) {
         console.error("Signup Error:", err.message);
@@ -54,6 +59,12 @@ app.post('/api/auth/login', async (req, res) => {
     try {
         const { data, error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
+
+        // INNOVATION: Log Real-time Activity
+        await supabase.from('site_activity').insert([
+            { event_type: 'USER_LOGIN', user_email: email }
+        ]);
+
         res.json({ status: 'success', user: data.user, session: data.session });
     } catch (err) {
         res.status(400).json({ status: 'error', message: err.message });
@@ -117,6 +128,11 @@ app.post('/api/submit-code', async (req, res) => {
                     problems_solved: prof.problems_solved + 1
                 }).eq('id', user.id);
             }
+
+            // INNOVATION: Log Real-time Activity for correctly solved problems!
+            await supabase.from('site_activity').insert([
+                { event_type: 'PROBLEM_SOLVED', user_email: user.email }
+            ]);
         }
 
         res.json({ status: 'success', data: { verdict, execution_time, memory_used } });
@@ -126,15 +142,27 @@ app.post('/api/submit-code', async (req, res) => {
     }
 });
 
-// 3. READ: Fetch Global Leaderboard Data
+// 3. READ: Fetch Global Leaderboard Data (Supports Search & Pagination)
 app.get('/api/leaderboard', async (req, res) => {
     try {
-        // Fetch top 50 users based on Score!
-        const { data, error } = await supabase
-            .from('profiles')
-            .select('username, total_score, problems_solved')
+        const { search, page = 1 } = req.query;
+        const limit = 10;
+        const from = (page - 1) * limit;
+        const to = from + limit - 1;
+
+        // Base fetch command
+        let query = supabase.from('profiles').select('username, total_score, problems_solved');
+
+        // Securely map UI searches to Database `.ilike()` filters
+        if (search) {
+            query = query.ilike('username', `%${search}%`);
+        }
+
+        // Apply strict pagination bounds
+        const { data, error } = await query
             .order('total_score', { ascending: false })
-            .limit(50);
+            .range(from, to);
+
         if (error) throw error;
         res.json({ status: 'success', data });
     } catch (err) {
@@ -220,6 +248,81 @@ app.post('/api/contests/register', async (req, res) => {
         res.json({ status: 'success', message: 'Registration Locked In!' });
     } catch (err) {
         res.status(400).json({ status: 'error', message: err.message });
+    }
+});
+
+// 8. DISCUSSIONS: Fetch and Post Comments
+app.get('/api/problems/:id/discussions', async (req, res) => {
+    try {
+        const { data, error } = await supabase
+            .from('discussions')
+            .select('*')
+            .eq('problem_id', req.params.id)
+            .order('created_at', { ascending: false });
+        if (error) throw error;
+        res.json({ status: 'success', data });
+    } catch (err) {
+        res.status(500).json({ status: 'error', message: err.message });
+    }
+});
+
+app.post('/api/problems/:id/discussions', async (req, res) => {
+    try {
+        const token = req.headers.authorization?.split(' ')[1];
+        if (!token) throw new Error("Unauthorized");
+
+        const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+        if (authError || !user) throw new Error("Invalid Session");
+
+        const { content } = req.body;
+
+        // Get username from profiles
+        const { data: profile } = await supabase.from('profiles').select('username').eq('id', user.id).single();
+        const username = profile ? profile.username : user.email.split('@')[0];
+
+        // Create a scoped client to satisfy RLS
+        const scopedConfig = { global: { headers: { Authorization: `Bearer ${token}` } } };
+        const userClient = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANON_KEY, scopedConfig);
+
+        const { error } = await userClient.from('discussions').insert([{
+            problem_id: req.params.id,
+            user_id: user.id,
+            username: username,
+            content: content
+        }]);
+
+        if (error) throw error;
+
+        // INNOVATION: Log Real-time Activity
+        await supabase.from('site_activity').insert([
+            { event_type: 'DISCUSSION_POST', user_email: user.email }
+        ]);
+
+        res.json({ status: 'success', message: 'Comment posted!' });
+    } catch (err) {
+        res.status(400).json({ status: 'error', message: err.message });
+    }
+});
+
+// 9. ADMIN: Global Analytics Dashboard
+app.get('/api/admin/stats', async (req, res) => {
+    try {
+        const { count: userCount, error: userErr } = await supabase.from('profiles').select('*', { count: 'exact', head: true });
+        const { count: subCount, error: subErr } = await supabase.from('submissions').select('*', { count: 'exact', head: true });
+        const { count: probCount, error: probErr } = await supabase.from('problems').select('*', { count: 'exact', head: true });
+
+        if (userErr || subErr || probErr) throw (userErr || subErr || probErr);
+
+        res.json({
+            status: 'success',
+            data: {
+                totalUsers: userCount || 0,
+                totalSubmissions: subCount || 0,
+                totalProblems: probCount || 0
+            }
+        });
+    } catch (err) {
+        res.status(500).json({ status: 'error', message: err.message });
     }
 });
 

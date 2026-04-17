@@ -1,20 +1,30 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Problem — CodeArena</title>
   <link rel="stylesheet" href="css/styles.css">
   <style>
-    body { overflow: hidden; display: flex; flex-direction: column; height: 100vh; }
+    body {
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+    }
   </style>
 </head>
+
 <body>
   <!-- Compact top bar -->
   <div class="problem-topbar">
-    <a href="index.html" style="display:flex;align-items:center;gap:8px;color:var(--text-primary);font-weight:700;font-size:0.95rem;text-decoration:none">
+    <a href="index.html"
+      style="display:flex;align-items:center;gap:8px;color:var(--text-primary);font-weight:700;font-size:0.95rem;text-decoration:none">
       <div class="nav-logo" style="width:24px;height:24px;border-radius:6px">
-        <svg viewBox="0 0 16 16" style="width:13px;height:13px;fill:#0a0c10"><path d="M9 1L3 9h5l-1 6 6-8H8l1-6z"/></svg>
+        <svg viewBox="0 0 16 16" style="width:13px;height:13px;fill:#0a0c10">
+          <path d="M9 1L3 9h5l-1 6 6-8H8l1-6z" />
+        </svg>
       </div>
       CodeArena
     </a>
@@ -52,9 +62,13 @@
         </div>
         <div class="problem-body">
           <div id="problem-description"></div>
-          <div style="font-size:0.78rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.07em;margin:1.25rem 0 0.75rem">Examples</div>
+          <div
+            style="font-size:0.78rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.07em;margin:1.25rem 0 0.75rem">
+            Examples</div>
           <div id="problem-examples"></div>
-          <div style="font-size:0.78rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.07em;margin:1.25rem 0 0.75rem">Constraints</div>
+          <div
+            style="font-size:0.78rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.07em;margin:1.25rem 0 0.75rem">
+            Constraints</div>
           <div id="problem-constraints"></div>
         </div>
       </div>
@@ -62,10 +76,14 @@
       <!-- Editorial -->
       <div class="tab-content" data-tab="editorial">
         <div class="problem-body">
-          <div style="font-size:0.78rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.07em;margin-bottom:1rem">Editorial</div>
+          <div
+            style="font-size:0.78rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.07em;margin-bottom:1rem">
+            Editorial</div>
           <div id="problem-editorial"></div>
-          <div style="margin-top:1.25rem;padding:1rem;background:var(--bg-tertiary);border-radius:var(--radius-sm);border:1px solid var(--border)">
-            <p style="font-size:0.82rem;color:var(--text-muted)">Full editorial with code solutions is available after submitting a correct solution.</p>
+          <div
+            style="margin-top:1.25rem;padding:1rem;background:var(--bg-tertiary);border-radius:var(--radius-sm);border:1px solid var(--border)">
+            <p style="font-size:0.82rem;color:var(--text-muted)">Full editorial with code solutions is available after
+              submitting a correct solution.</p>
           </div>
         </div>
       </div>
@@ -74,36 +92,25 @@
       <div class="tab-content" data-tab="discussion">
         <div class="problem-body">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem">
-            <div style="font-size:0.78rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.07em">Discussion</div>
-            <button class="btn btn-primary btn-sm">New Post</button>
+            <div
+              style="font-size:0.78rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.07em">
+              Discussion</div>
+            <button class="btn btn-primary btn-sm" onclick="document.getElementById('discussion-input').focus()">New
+              Post</button>
           </div>
-          <div class="comment">
-            <div class="comment-header">
-              <div class="avatar" style="width:28px;height:28px;font-size:0.72rem;background:var(--accent-dim);color:var(--accent)">AC</div>
-              <span style="font-weight:600;font-size:0.82rem">tourneysolver</span>
-              <span style="color:var(--text-muted);font-size:0.75rem">2 hours ago</span>
-            </div>
-            <div class="comment-body">Great problem. The key insight is using a hash map for O(1) lookups. Once you see that pattern, it becomes straightforward.</div>
-            <div class="comment-actions">
-              <button>24 upvotes</button>
-              <button>Reply</button>
-            </div>
+
+          <div id="discussion-list">
+            <!-- Dynamic comments will be injected here -->
+            <p style="text-align:center;color:var(--text-muted);padding:1rem;">Loading discussions...</p>
           </div>
-          <div class="comment">
-            <div class="comment-header">
-              <div class="avatar" style="width:28px;height:28px;font-size:0.72rem;background:var(--purple-dim);color:var(--purple)">PS</div>
-              <span style="font-weight:600;font-size:0.82rem">codemaster99</span>
-              <span style="color:var(--text-muted);font-size:0.75rem">5 hours ago</span>
-            </div>
-            <div class="comment-body">Can also be solved with two pointers if the array is sorted, but the hash map approach is more general and works in O(n).</div>
-            <div class="comment-actions">
-              <button>18 upvotes</button>
-              <button>Reply</button>
-            </div>
-          </div>
-          <div style="margin-top:1rem">
-            <textarea class="form-input" rows="3" placeholder="Share your thoughts or ask a question..." style="resize:vertical;font-size:0.85rem"></textarea>
-            <button class="btn btn-primary btn-sm" style="margin-top:0.5rem">Post</button>
+
+          <div style="margin-top:2rem; padding-top:1.5rem; border-top:1px solid var(--border)">
+            <textarea id="discussion-input" class="form-input" rows="3"
+              placeholder="Share your thoughts or ask a question..."
+              style="resize:vertical;font-size:0.85rem"></textarea>
+            <div id="discussion-msg" style="font-size:0.75rem;margin-top:0.4rem;display:none"></div>
+            <button id="post-discussion-btn" class="btn btn-primary btn-sm" style="margin-top:0.5rem">Post
+              Comment</button>
           </div>
         </div>
       </div>
@@ -111,11 +118,19 @@
       <!-- Submissions -->
       <div class="tab-content" data-tab="submissions-tab">
         <div class="problem-body">
-          <div style="font-size:0.78rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.07em;margin-bottom:1rem">My Submissions</div>
+          <div
+            style="font-size:0.78rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.07em;margin-bottom:1rem">
+            My Submissions</div>
           <table class="submissions-table" style="width:100%">
-            <thead><tr>
-              <th>Status</th><th>Language</th><th>Runtime</th><th>Memory</th><th>Time</th>
-            </tr></thead>
+            <thead>
+              <tr>
+                <th>Status</th>
+                <th>Language</th>
+                <th>Runtime</th>
+                <th>Memory</th>
+                <th>Time</th>
+              </tr>
+            </thead>
             <tbody>
               <tr>
                 <td><span class="badge badge-accepted">Accepted</span></td>
@@ -169,21 +184,29 @@
           <p id="hint-text">Click "Get Hint" to receive a contextual hint for this problem.</p>
           <div class="hint-actions">
             <button class="btn btn-primary btn-sm" id="new-hint-btn">Get Hint</button>
-            <button class="btn btn-ghost btn-sm" onclick="document.getElementById('ai-hint-panel').classList.remove('open')">Close</button>
+            <button class="btn btn-ghost btn-sm"
+              onclick="document.getElementById('ai-hint-panel').classList.remove('open')">Close</button>
           </div>
           <p class="hint-note">Backend: implement POST /api/ai/hint</p>
         </div>
       </div>
 
       <!-- Test Cases -->
-      <div style="background:var(--bg-secondary);border-top:1px solid var(--border);padding:0.65rem 0.85rem;flex-shrink:0">
-        <div style="font-size:0.72rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.07em;margin-bottom:0.5rem">Test Cases</div>
+      <div
+        style="background:var(--bg-secondary);border-top:1px solid var(--border);padding:0.65rem 0.85rem;flex-shrink:0">
+        <div
+          style="font-size:0.72rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.07em;margin-bottom:0.5rem">
+          Test Cases</div>
         <div style="display:flex;gap:0.4rem;margin-bottom:0.5rem">
-          <button class="tab-btn active" style="font-size:0.75rem;padding:0.2rem 0.55rem;border-bottom-width:1px">Case 1</button>
-          <button class="tab-btn" style="font-size:0.75rem;padding:0.2rem 0.55rem;border-bottom-width:1px">Case 2</button>
-          <button class="tab-btn" style="font-size:0.75rem;padding:0.2rem 0.55rem;border-bottom-width:1px">+ Add</button>
+          <button class="tab-btn active" style="font-size:0.75rem;padding:0.2rem 0.55rem;border-bottom-width:1px">Case
+            1</button>
+          <button class="tab-btn" style="font-size:0.75rem;padding:0.2rem 0.55rem;border-bottom-width:1px">Case
+            2</button>
+          <button class="tab-btn" style="font-size:0.75rem;padding:0.2rem 0.55rem;border-bottom-width:1px">+
+            Add</button>
         </div>
-        <div style="background:var(--bg-tertiary);border-radius:var(--radius-sm);padding:0.5rem 0.75rem;font-family:var(--font-mono);font-size:0.78rem;color:var(--text-secondary);border:1px solid var(--border)">
+        <div
+          style="background:var(--bg-tertiary);border-radius:var(--radius-sm);padding:0.5rem 0.75rem;font-family:var(--font-mono);font-size:0.78rem;color:var(--text-secondary);border:1px solid var(--border)">
           nums = [2,7,11,15]<br>target = 9
         </div>
       </div>
@@ -192,7 +215,8 @@
       <div class="console-panel">
         <div class="console-header">
           Output
-          <button class="btn btn-ghost btn-sm" onclick="document.getElementById('console-output').innerHTML='<span class=out-info>Cleared.</span>'">Clear</button>
+          <button class="btn btn-ghost btn-sm"
+            onclick="document.getElementById('console-output').innerHTML='<span class=out-info>Cleared.</span>'">Clear</button>
         </div>
         <div class="console-output" id="console-output">
           <span class="out-info">Run your code to see output here...</span>
@@ -212,4 +236,5 @@
 
   <script src="js/script.js"></script>
 </body>
+
 </html>

@@ -40,3 +40,9 @@ This document specifically details the full-stack architecture, implementations,
 * **Secure JWT Routing**: Crucial logic processes (Submission) refuse to run unless the User provides a valid Authorization Bearer token inside their headers. 
 * **Scoped Bypasses**: The Express backend correctly authenticates JWT tokens on the fly to bypass PostgreSQL Row-Level Security explicitly within restricted contexts, showing a high degree of robust security architecture. 
 * **Mock Isolation**: Even without Dockerized execution, the decision-making branch validating verdicts operates blindly from User interference natively within pure Node environments preventing UI cheating.
+---
+
+### 5. Innovation Engine (Technical Social Proof)
+**Judges Metric:** *Technical Innovation & Advanced Capability*
+* **PostgreSQL WebSockets**: We didn't stop at just CRUD. We integrated a **Live Activity Notification System** using Supabase's WebSocket-based Broadcast feature.
+* **Low Latency Notifications**: The backend broadcasts events (Signups, Solves) into a Publication stream. The frontend maintains an active subscription, instantly triggering CSS-animated "Live Toasts" for other online users. This demonstrates a mastery of the **Publisher/Subscriber (Pub/Sub)** architectural pattern in a modern Full-Stack context.

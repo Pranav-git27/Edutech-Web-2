@@ -1,11 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Leaderboard — CodeArena</title>
   <link rel="stylesheet" href="css/styles.css">
 </head>
+
 <body>
   <div id="navbar"></div>
 
@@ -16,31 +18,41 @@
     </div>
 
     <!-- Top 3 -->
-    <div style="display:flex;justify-content:center;align-items:flex-end;gap:1rem;margin-bottom:2.5rem;padding:0 1rem">
+    <div id="top3-podium"
+      style="display:flex;justify-content:center;align-items:flex-end;gap:1rem;margin-bottom:2.5rem;padding:0 1rem">
       <!-- 2nd -->
       <div style="text-align:center;flex:1;max-width:150px">
-        <div class="avatar" style="width:52px;height:52px;font-size:1.1rem;margin:0 auto 0.5rem;background:#9ba3af18;color:#9ba3af">PS</div>
+        <div class="avatar"
+          style="width:52px;height:52px;font-size:1.1rem;margin:0 auto 0.5rem;background:#9ba3af18;color:#9ba3af">PS
+        </div>
         <div style="font-weight:700;font-size:0.875rem;letter-spacing:-0.01em">codemaster99</div>
         <div style="color:var(--text-muted);font-size:0.75rem;margin-bottom:0.75rem">2,754</div>
-        <div style="background:var(--bg-secondary);border:1px solid var(--border);border-radius:var(--radius-sm) var(--radius-sm) 0 0;height:72px;display:flex;align-items:center;justify-content:center">
+        <div
+          style="background:var(--bg-secondary);border:1px solid var(--border);border-radius:var(--radius-sm) var(--radius-sm) 0 0;height:72px;display:flex;align-items:center;justify-content:center">
           <span class="rank-silver" style="font-size:1.25rem;font-weight:800">2</span>
         </div>
       </div>
       <!-- 1st -->
       <div style="text-align:center;flex:1;max-width:170px">
-        <div class="avatar" style="width:64px;height:64px;font-size:1.35rem;margin:0 auto 0.5rem;background:#d4a01718;color:#d4a017">AC</div>
+        <div class="avatar"
+          style="width:64px;height:64px;font-size:1.35rem;margin:0 auto 0.5rem;background:#d4a01718;color:#d4a017">AC
+        </div>
         <div style="font-weight:700;font-size:0.95rem;letter-spacing:-0.01em">tourneysolver</div>
         <div style="color:var(--text-muted);font-size:0.75rem;margin-bottom:0.75rem">2,891</div>
-        <div style="background:var(--bg-secondary);border:1px solid rgba(212,160,23,0.2);border-radius:var(--radius-sm) var(--radius-sm) 0 0;height:100px;display:flex;align-items:center;justify-content:center">
+        <div
+          style="background:var(--bg-secondary);border:1px solid rgba(212,160,23,0.2);border-radius:var(--radius-sm) var(--radius-sm) 0 0;height:100px;display:flex;align-items:center;justify-content:center">
           <span class="rank-gold" style="font-size:1.5rem;font-weight:800">1</span>
         </div>
       </div>
       <!-- 3rd -->
       <div style="text-align:center;flex:1;max-width:150px">
-        <div class="avatar" style="width:52px;height:52px;font-size:1.1rem;margin:0 auto 0.5rem;background:#a0714f18;color:#a0714f">ML</div>
+        <div class="avatar"
+          style="width:52px;height:52px;font-size:1.1rem;margin:0 auto 0.5rem;background:#a0714f18;color:#a0714f">ML
+        </div>
         <div style="font-weight:700;font-size:0.875rem;letter-spacing:-0.01em">algo_wizard</div>
         <div style="color:var(--text-muted);font-size:0.75rem;margin-bottom:0.75rem">2,701</div>
-        <div style="background:var(--bg-secondary);border:1px solid var(--border);border-radius:var(--radius-sm) var(--radius-sm) 0 0;height:52px;display:flex;align-items:center;justify-content:center">
+        <div
+          style="background:var(--bg-secondary);border:1px solid var(--border);border-radius:var(--radius-sm) var(--radius-sm) 0 0;height:52px;display:flex;align-items:center;justify-content:center">
           <span class="rank-bronze" style="font-size:1.25rem;font-weight:800">3</span>
         </div>
       </div>
@@ -48,12 +60,16 @@
 
     <!-- Filter row -->
     <div style="display:flex;gap:0.5rem;margin-bottom:1.25rem;flex-wrap:wrap;align-items:center">
-      <button class="btn btn-primary btn-sm">Global</button>
-      <button class="btn btn-ghost btn-sm">This Month</button>
-      <button class="btn btn-ghost btn-sm">This Week</button>
+      <button class="btn btn-primary btn-sm filter-btn">Global</button>
+      <button class="btn btn-ghost btn-sm filter-btn">This Month</button>
+      <button class="btn btn-ghost btn-sm filter-btn">This Week</button>
       <div class="search-wrap" style="max-width:220px;margin-left:auto">
-        <svg class="search-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-        <input type="text" class="search-input" placeholder="Search user...">
+        <svg class="search-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+          stroke-width="2">
+          <circle cx="11" cy="11" r="8" />
+          <path d="m21 21-4.35-4.35" />
+        </svg>
+        <input type="text" id="leaderboard-search" class="search-input" placeholder="Search user...">
       </div>
     </div>
 
@@ -69,20 +85,23 @@
           </tr>
         </thead>
         <tbody id="leaderboard-tbody">
-          <tr><td colspan="5" style="text-align:center;padding:3rem;color:var(--text-muted)">Loading...</td></tr>
+          <tr>
+            <td colspan="5" style="text-align:center;padding:3rem;color:var(--text-muted)">Loading...</td>
+          </tr>
         </tbody>
       </table>
     </div>
 
-    <div class="pagination" style="margin-top:1.5rem">
-      <button class="page-btn active">1</button>
-      <button class="page-btn">2</button>
-      <button class="page-btn">3</button>
-      <button class="page-btn">›</button>
+    <div class="pagination" id="leaderboard-pagination" style="margin-top:1.5rem">
+      <button class="page-btn active" data-page="1">1</button>
+      <button class="page-btn" data-page="2">2</button>
+      <button class="page-btn" data-page="3">3</button>
+      <button class="page-btn" data-page="next">›</button>
     </div>
   </div>
 
   <div id="footer"></div>
   <script src="js/script.js"></script>
 </body>
+
 </html>

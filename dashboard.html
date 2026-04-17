@@ -1,18 +1,46 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Dashboard — CodeArena</title>
   <link rel="stylesheet" href="css/styles.css">
 </head>
+
 <body>
   <div id="navbar"></div>
 
   <div class="dashboard-page">
     <div style="margin-bottom:1.5rem">
       <h1 class="page-title">Dashboard</h1>
-      <p class="page-subtitle">Welcome back, <a href="profile.html" style="color:var(--accent)">tourneysolver</a></p>
+      <p class="page-subtitle">Welcome back, <a href="profile.html" id="dash-welcome-user"
+          style="color:var(--accent)">User</a></p>
+    </div>
+
+    <!-- Admin Overview Board (Innovation Engine) -->
+    <div id="admin-board"
+      style="display:none; margin-bottom:2rem; padding:1.25rem; background:linear-gradient(135deg, rgba(79,142,247,0.05), rgba(163,113,247,0.05)); border:1px solid var(--border); border-radius:var(--radius-lg);">
+      <div
+        style="font-size:0.75rem; font-weight:700; color:var(--purple); text-transform:uppercase; letter-spacing:0.08em; margin-bottom:1rem; display:flex; align-items:center; gap:8px;">
+        <span
+          style="width:8px; height:8px; background:var(--purple); border-radius:50%; box-shadow:0 0 8px var(--purple)"></span>
+        Platform Admin Overview
+      </div>
+      <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(140px, 1fr)); gap:1.5rem;">
+        <div>
+          <div id="admin-total-users" style="font-size:1.5rem; font-weight:800; color:var(--text-primary)">0</div>
+          <div style="font-size:0.72rem; color:var(--text-muted); margin-top:2px;">Total Registered Minds</div>
+        </div>
+        <div>
+          <div id="admin-total-submissions" style="font-size:1.5rem; font-weight:800; color:var(--green)">0</div>
+          <div style="font-size:0.72rem; color:var(--text-muted); margin-top:2px;">Code Submissions Analyzed</div>
+        </div>
+        <div>
+          <div id="admin-total-problems" style="font-size:1.5rem; font-weight:800; color:var(--accent)">0</div>
+          <div style="font-size:0.72rem; color:var(--text-muted); margin-top:2px;">Curated Problem Set</div>
+        </div>
+      </div>
     </div>
 
     <!-- Top Stats -->
@@ -66,9 +94,9 @@
           <div style="display:flex;justify-content:center;margin:1rem 0">
             <div class="progress-ring">
               <svg width="110" height="110" viewBox="0 0 110 110">
-                <circle cx="55" cy="55" r="46" fill="none" stroke="var(--bg-tertiary)" stroke-width="8"/>
+                <circle cx="55" cy="55" r="46" fill="none" stroke="var(--bg-tertiary)" stroke-width="8" />
                 <circle cx="55" cy="55" r="46" fill="none" stroke="var(--accent)" stroke-width="8"
-                  stroke-dasharray="289" stroke-dashoffset="160" stroke-linecap="round"/>
+                  stroke-dasharray="289" stroke-dashoffset="160" stroke-linecap="round" />
               </svg>
               <div class="ring-text">
                 <div class="r-num">247</div>
@@ -82,12 +110,26 @@
 
         <!-- Badges -->
         <div class="card">
-          <div style="font-size:0.82rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.07em;margin-bottom:1rem">Badges</div>
+          <div
+            style="font-size:0.82rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.07em;margin-bottom:1rem">
+            Badges</div>
           <div class="badges-grid">
-            <div class="badge-item"><div class="bi-icon">&#127942;</div><div class="bi-name">Top 10</div></div>
-            <div class="badge-item"><div class="bi-icon">&#9889;</div><div class="bi-name">Speed Coder</div></div>
-            <div class="badge-item"><div class="bi-icon">&#127919;</div><div class="bi-name">Sharpshooter</div></div>
-            <div class="badge-item"><div class="bi-icon">&#127775;</div><div class="bi-name">100 Solved</div></div>
+            <div class="badge-item">
+              <div class="bi-icon">&#127942;</div>
+              <div class="bi-name">Top 10</div>
+            </div>
+            <div class="badge-item">
+              <div class="bi-icon">&#9889;</div>
+              <div class="bi-name">Speed Coder</div>
+            </div>
+            <div class="badge-item">
+              <div class="bi-icon">&#127919;</div>
+              <div class="bi-name">Sharpshooter</div>
+            </div>
+            <div class="badge-item">
+              <div class="bi-icon">&#127775;</div>
+              <div class="bi-name">100 Solved</div>
+            </div>
           </div>
         </div>
       </div>
@@ -97,11 +139,14 @@
         <!-- Heatmap -->
         <div class="card">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem">
-            <div style="font-size:0.82rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.07em">Activity — Last 52 Weeks</div>
+            <div
+              style="font-size:0.82rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.07em">
+              Activity — Last 52 Weeks</div>
             <span style="font-size:0.75rem;color:var(--text-muted)">247 submissions</span>
           </div>
           <div id="heatmap" class="heatmap"></div>
-          <div style="display:flex;align-items:center;gap:0.4rem;margin-top:0.75rem;font-size:0.72rem;color:var(--text-muted)">
+          <div
+            style="display:flex;align-items:center;gap:0.4rem;margin-top:0.75rem;font-size:0.72rem;color:var(--text-muted)">
             Less
             <div style="width:10px;height:10px;border-radius:2px;background:var(--bg-tertiary)"></div>
             <div style="width:10px;height:10px;border-radius:2px;background:rgba(52,208,88,0.25)"></div>
@@ -114,20 +159,30 @@
 
         <!-- Topic Progress -->
         <div class="card">
-          <div style="font-size:0.82rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.07em;margin-bottom:1rem">Progress by Topic</div>
+          <div
+            style="font-size:0.82rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.07em;margin-bottom:1rem">
+            Progress by Topic</div>
           <div id="topic-progress"></div>
         </div>
 
         <!-- Recent Submissions -->
         <div class="card" style="padding:0;overflow:hidden">
-          <div style="padding:1rem 1.25rem;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center">
-            <div style="font-size:0.82rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.07em">Recent Submissions</div>
+          <div
+            style="padding:1rem 1.25rem;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center">
+            <div
+              style="font-size:0.82rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.07em">
+              Recent Submissions</div>
             <a href="submissions.html" class="btn btn-ghost btn-sm">View all</a>
           </div>
           <table class="submissions-table">
-            <thead><tr>
-              <th>Problem</th><th>Status</th><th>Language</th><th>Time</th>
-            </tr></thead>
+            <thead>
+              <tr>
+                <th>Problem</th>
+                <th>Status</th>
+                <th>Language</th>
+                <th>Time</th>
+              </tr>
+            </thead>
             <tbody id="recent-submissions-tbody"></tbody>
           </table>
         </div>
@@ -153,7 +208,7 @@
             <span style="color:var(--text-muted);font-variant-numeric:tabular-nums">${t.solved} / ${t.total}</span>
           </div>
           <div style="height:4px;background:var(--bg-tertiary);border-radius:2px;overflow:hidden">
-            <div style="height:100%;width:${Math.round(t.solved/t.total*100)}%;background:${t.color};border-radius:2px"></div>
+            <div style="height:100%;width:${Math.round(t.solved / t.total * 100)}%;background:${t.color};border-radius:2px"></div>
           </div>
         </div>`).join('');
 
@@ -167,4 +222,5 @@
     });
   </script>
 </body>
+
 </html>
